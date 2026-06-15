@@ -264,7 +264,8 @@ let works = projectsData;
      * Set size
      */
     setSize() {
-      this.el.style.setProperty('--height', this.works.length * 50 + 'lvh')
+      const heightMultiplier = window.safeWidth <= 576 ? 35 : 50
+      this.el.style.setProperty('--height', this.works.length * heightMultiplier + 'lvh')
 
       const bounding = this.container.getBoundingClientRect()
 

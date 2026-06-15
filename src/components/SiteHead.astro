@@ -121,7 +121,26 @@ const menu = [
     >
       <img src="/images/qr-code.svg" alt="QR Code" width="72" height="72" />
     </a><!-- .sb-qr-code -->
+
+    <button class="sb-hamburger js-hamburger" type="button" aria-label="Toggle menu" aria-expanded="false">
+      <span class="sb-hamburger__bar"></span>
+      <span class="sb-hamburger__bar"></span>
+    </button><!-- .sb-hamburger -->
   </div><!-- .site-head__container -->
+
+  <nav class="sb-mobile-nav js-mobile-nav" aria-hidden="true">
+    <ul class="sb-mobile-nav__list">
+      {
+        menu.map((item) => (
+          <li class="sb-mobile-nav__item">
+            <a href={'#' + item.id} class="sb-mobile-nav__link js-mobile-link">
+              <span class="sb__text">{item.text}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav><!-- .sb-mobile-nav -->
 </header>
 
 <script>
@@ -156,8 +175,13 @@ const menu = [
       this.console = document.querySelector('.js-console')
       this.contrastMask = document.querySelector('.js-contrast-mask')
       this.links = this.el.querySelectorAll('.js-menu-link')
+      this.hamburger = document.querySelector('.js-hamburger')
+      this.mobileNav = document.querySelector('.js-mobile-nav')
+      this.mobileLinks = this.el.querySelectorAll('.js-mobile-link')
 
       // Properties
+      this.isMenuOpen = false
+
       this.messages = [
         'Preparing for inevitable debugging',
         'Compiling designer dreams…into developer nightmares',
@@ -257,6 +281,12 @@ const menu = [
 
       this.links.forEach((link) => {
         link.addEventListener('click', this.moveToSection.bind(this))
+      })
+
+      this.hamburger?.addEventListener('click', this.toggleMenu.bind(this))
+
+      this.mobileLinks.forEach((link) => {
+        link.addEventListener('click', this.mobileNavClick.bind(this))
       })
 
       document.addEventListener('intro', this.intro.bind(this), { once: true })
@@ -463,6 +493,89 @@ const menu = [
 
       return message
     }
+
+    /**
+     * Toggle mobile menu
+     */
+    toggleMenu() {
+      if (this.isMenuOpen) {
+        this.closeMenu()
+      } else {
+        this.openMenu()
+      }
+    }
+
+    /**
+     * Open mobile menu
+     */
+    openMenu() {
+      this.isMenuOpen = true
+      this.hamburger.classList.add('is-open')
+      this.hamburger.setAttribute('aria-expanded', 'true')
+      this.mobileNav.setAttribute('aria-hidden', 'false')
+      document.documentElement.classList.add('is-menu-open')
+
+      const links = Array.from(
+        this.mobileNav.querySelectorAll('.sb-mobile-nav__link')
+      )
+
+      gsap.set(this.mobileNav, { height: 'auto' })
+      gsap.from(this.mobileNav, {
+        height: 0,
+        duration: 0.55,
+        ease: 'expo.inOut',
+      })
+
+      gsap.fromTo(
+        links,
+        { y: '-100%' },
+        {
+          y: '0%',
+          duration: 0.5,
+          ease: 'expo.out',
+          stagger: 0.07,
+          delay: 0.18,
+        }
+      )
+    }
+
+    /**
+     * Close mobile menu
+     */
+    closeMenu() {
+      if (!this.isMenuOpen) return
+
+      this.isMenuOpen = false
+      this.hamburger.classList.remove('is-open')
+      this.hamburger.setAttribute('aria-expanded', 'false')
+      this.mobileNav.setAttribute('aria-hidden', 'true')
+      document.documentElement.classList.remove('is-menu-open')
+
+      gsap.to(this.mobileNav, {
+        height: 0,
+        duration: 0.4,
+        ease: 'expo.inOut',
+      })
+    }
+
+    /**
+     * Mobile nav link click
+     */
+    mobileNavClick(e) {
+      e.preventDefault()
+
+      const id = e.currentTarget.getAttribute('href')
+
+      this.closeMenu()
+
+      setTimeout(() => {
+        window.lenis?.scrollTo(id, {
+          duration: 1.5,
+          easing: (t) =>
+            t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t,
+        })
+      }, 420)
+    }
   }
 
   new Section()
@@ -662,14 +775,7 @@ const menu = [
       }
 
       @include mq(phone) {
-        @include flex(row, center, center);
-
-        order: 3;
-
-        margin-left: auto;
-
-        background: none;
-        border-left: 0;
+        display: none;
       }
 
       .sb__item {
@@ -784,6 +890,7 @@ const menu = [
 
       @include mq(phone) {
         height: 100%;
+        margin-left: auto;
       }
 
       &:before {
@@ -866,13 +973,7 @@ const menu = [
       }
 
       @include mq(phone) {
-        @include flex(column, center, center);
-
-        flex-grow: 0;
-
-        background: none;
-        border-left: 1px solid color(secondary);
-        order: 3;
+        display: none;
       }
 
       p {
@@ -956,6 +1057,100 @@ const menu = [
           top / 100% 12.5% repeat;
 
         content: '';
+      }
+    }
+  }
+
+  /* ─── Hamburger Button ─── */
+  .sb-hamburger {
+    display: none;
+
+    @include mq(phone) {
+      @include flex(column, center, center);
+
+      gap: 6px;
+      order: 6;
+
+      width: 48px;
+      height: 100%;
+
+      appearance: none;
+      background: none;
+      border: 0;
+      border-left: 1px solid color(secondary);
+      border-radius: 0;
+      cursor: pointer;
+
+      &__bar {
+        display: block;
+        width: 18px;
+        height: 1.5px;
+
+        background: color(secondary);
+        transform-origin: center;
+
+        transition:
+          transform 0.4s ease(in-out-expo),
+          opacity 0.25s linear;
+      }
+
+      &.is-open {
+        .sb-hamburger__bar:first-child {
+          transform: translateY(3.75px) rotate(45deg);
+        }
+
+        .sb-hamburger__bar:last-child {
+          transform: translateY(-3.75px) rotate(-45deg);
+        }
+      }
+    }
+  }
+
+  /* ─── Mobile Nav Panel ─── */
+  .sb-mobile-nav {
+    display: none;
+
+    @include mq(phone) {
+      display: block;
+      height: 0;
+      overflow: hidden;
+
+      background: color(primary);
+      border-bottom: 1px solid color(secondary);
+
+      &__list {
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+      }
+
+      &__item {
+        overflow: hidden;
+        border-top: 1px solid color(secondary);
+      }
+
+      &__link {
+        @include flex(row, center, space-between);
+
+        padding: 1.5rem 2rem;
+
+        color: color(secondary);
+        font: 400 14px / 1 font-family(fraktion);
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        text-transform: uppercase;
+
+        &:after {
+          content: '→';
+
+          font-size: 12px;
+          opacity: 0.5;
+        }
+
+        &:active {
+          opacity: 0.6;
+        }
       }
     }
   }

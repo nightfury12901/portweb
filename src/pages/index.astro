@@ -21,7 +21,7 @@ import '../styles/global.scss'
     <meta
       name="description"
       content="Chinmay Mishra is a full-stack developer and AI/ML engineer based in Delhi, India." />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
 
     <meta name="robots" content="index, follow" />
@@ -732,6 +732,10 @@ import '../styles/global.scss'
       will-change: border-width;
 
       pointer-events: none;
+
+      @include mq(phone) {
+        border-width: 0.5rem;
+      }
     }
   </style>
 </html>
